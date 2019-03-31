@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:id="@+id/cPreview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        >
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtHeartRate"
+        android:layout_width="match_parent"
+        android:layout_height="57dp"
+        android:layout_marginTop="50dp"
+        android:textSize="32sp"
+        android:textAlignment="center"
+        android:text="@string/zero" />
+
+    <ImageView
+        android:id="@+id/imgHeart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        app:srcCompat="@drawable/heart_orange" />
+
+    <Button
+        android:id="@+id/btnSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:layout_marginTop="100dp"
+        android:text="Bắt đầu đo" />
+
+</LinearLayout>

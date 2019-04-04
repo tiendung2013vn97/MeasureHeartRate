@@ -40,28 +40,33 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btnSwitch;
-    private Camera camera;
-    private boolean isFlashOn;
+    public  Button btnSwitch;
+    public static boolean isFlashOn;
     private boolean hasFlash;
-    private Parameters params;
     private static final int CAMERA_PERMISSION = 1;
-    private static final int FLASHLIGHT_PERMISSION = 2;
-    public static Bitmap[] bitmap=new Bitmap[100];;
-    private Context myContext;
-    private CameraPreview mPreview;
-    private Camera.PictureCallback mPicture;
-    private LinearLayout cameraPreview;
+    private static Context myContext;
     int ColorHeart=0;
-    int temp=0;
-    long[] sumArr=new long[100];
 
     private ImageView imgHeart;
     private TextView txtHeartRate;
-    private CameraManager mCameraManager;
-    private String mCameraId;
 
-    long timeStart=0;
+    private static SurfaceView preview = null;
+    private static SurfaceHolder previewHolder = null;
+    private static Camera camera = null;
+    private static View image = null;
+    public  TextView text = null;
+    private static long startTime=0;
+
+    private static int[] arrSumRed=new int[1000];
+    private static long[] arrTime=new long[1000];
+    private static int arrIndex=-1;
+
+    private static boolean isMeasureFinished=false;
+    private static boolean isShowResult=false;
+    private static long[] arrResult=new long[10];
+    private static int indexOfResult=0;
+    private static int resetisShowResult=0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +78,14 @@ public class MainActivity extends AppCompatActivity {
 
         imgHeart=(ImageView)findViewById(R.id.imgHeart);
         txtHeartRate=(TextView)findViewById(R.id.txtHeartRate);
-        cameraPreview = (LinearLayout) findViewById(R.id.cPreview);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         myContext=this;
         isFlashOn=false;
-
+        preview = (SurfaceView) findViewById(R.id.preview);
+        previewHolder = preview.getHolder();
+        previewHolder.addCallback(surfaceCallback);
+        previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        myContext=this;
         //check Camera Permission__________________________________________________________
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED) {
@@ -109,19 +117,30 @@ public class MainActivity extends AppCompatActivity {
         //end check has flash_______________________________________________________________
 
 
-        getCamera();
-
         btnSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                arrIndex=-1;
+                indexOfResult=0;
+                isMeasureFinished=false;
+                isShowResult=false;
+                btnSwitch.setEnabled(false);
                 btnSwitch.setText("Đang đo...");
-                int i=0;
+
+                isFlashOn=true;
                 HeartAnimation();
-                if (isFlashOn) {
-                    turnOffFlash();
-                } else {
-                    turnOnFlash();
+                Camera.Parameters parameters = camera.getParameters();
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                Camera.Size size = getSmallestPreviewSize(200, 200, parameters);
+                if (size != null) {
+                    parameters.setPreviewSize(size.width, size.height);
+                    //Log.d(TAG, "Using width=" + size.width + " height=" + size.height);
                 }
+                camera.setParameters(parameters);
+                camera.startPreview();
+                startTime=System.currentTimeMillis();
+
             }
         });
 
@@ -154,33 +173,7 @@ public class MainActivity extends AppCompatActivity {
         };
         timer.schedule(timerTask,500);
     }
-    private void CaptureImages(int maxTime){
-        long timeExpand= System.currentTimeMillis()/1000-timeStart;
 
-        if(timeExpand<maxTime){
-            mPicture = getPictureCallback();
-            camera.takePicture(null, null, mPicture);
-            btnSwitch.setEnabled(false);
-        }else{
-            turnOffFlash();
-            long sum=0;
-            for(int i=0;i<temp;i++){
-                sumArr[i]=0;
-                for(int bmW=0;bmW<bitmap[i].getWidth();bmW++){
-                    for(int bmH=0;bmH<bitmap[i].getHeight();bmH++){
-                        sumArr[i]+= Color.red(bitmap[i].getPixel(bmW,bmH));
-
-                    }
-                }
-            }
-            for(int i=0;i<temp;i++){
-                Toast.makeText(myContext,String.valueOf(sumArr[i]*1.0/(bitmap[0].getWidth()*bitmap[0].getHeight())),Toast.LENGTH_SHORT).show();
-            }
-            btnSwitch.setEnabled(true);
-            btnSwitch.setText("Bắt đầu đo");
-        }
-
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -200,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                     alert.show();
                 }else{
-                    getCamera();
+
                 }
 
                 break;
@@ -209,136 +202,185 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //getCamera______________________________________________________________________________
-    private void getCamera() {
-        if (camera == null) {
-            try {
-                camera = Camera.open(0);
-
-                camera.setDisplayOrientation(90);
-                mPreview = new CameraPreview(myContext, camera);
-                cameraPreview.addView(mPreview);
-                android.view.ViewGroup.LayoutParams lp=mPreview.getLayoutParams();
-                lp.height=1;
-                lp.width=1;
-                mPreview.setLayoutParams(lp);
-
-                params = camera.getParameters();
-                params.setFlashMode(Parameters.FLASH_MODE_OFF);
-                camera.setParameters(params);
-                camera.startPreview();
-
-            } catch (RuntimeException e) {
-                Log.e("Failed Camera. Error: ", e.getMessage());
-                Toast.makeText(this,"Loi mo den",Toast.LENGTH_SHORT).show();
-
-            }
-        }
-    }
-    //end getCamera__________________________________________________________________________
-
-    private void turnOnFlash() {
-        if (!isFlashOn) {
-            if (camera == null || params == null) {
-                return;
-            }
-            timeStart= System.currentTimeMillis()/1000;
-            params.setFlashMode(Parameters.FLASH_MODE_TORCH);
-            camera.setParameters(params);
-            camera.startPreview();
-            isFlashOn = true;
-            CaptureImages(10);
-
-        }
-    }
-
-    private void turnOffFlash() {
-        if (isFlashOn) {
-            timeStart=0;
-            if (camera == null || params == null) {
-                return;
-            }
-
-            releaseCamera();
-
-        }
-    }private Camera.PictureCallback getPictureCallback() {
-        Camera.PictureCallback picture = new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-
-                bitmap[temp] = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-                //Toast.makeText(myContext, String.valueOf(data), Toast.LENGTH_LONG).show();
-                params.setFlashMode(Parameters.FLASH_MODE_TORCH);
-                camera.setParameters(params);
-                mPreview.refreshCamera(camera);
-                temp++;
-                CaptureImages(10);
-
-
-            }
-        };
-        return picture;
-    }
-
-
-//
-//    public void onResume() {
-//
-//        super.onResume();
-//        if(camera == null) {
-////            camera = Camera.open();
-////            camera.setDisplayOrientation(90);
-////            if(isFlashOn){
-////                params.setFlashMode(Parameters.FLASH_MODE_TORCH);
-////                camera.setParameters(params);
-////            }
-////
-////            mPreview.refreshCamera(camera);
-//            Log.d("nu", "null");
-//        }else {
-//            Log.d("nu","no null");
-//        }
-//
-//    }
     @Override
-    protected void onPause() {
+    public void onResume() {
+        super.onResume();
+        camera = Camera.open();
+        // startTime = System.currentTimeMillis();
+    }
+    @Override
+    public void onPause() {
         super.onPause();
-        //when on Pause, release camera in order to be used from other applications
-        releaseCamera();
 
+        btnSwitch.setEnabled(true);
+        btnSwitch.setText("Bắt đầu đo");
+        camera.setPreviewCallback(null);
+        camera.stopPreview();
+        camera.release();
+        camera = null;
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (camera != null) {
-            if(isFlashOn){
-                params.setFlashMode(Parameters.FLASH_MODE_OFF);
-                camera.setParameters(params);
+    private static PreviewCallback previewCallback = new PreviewCallback() {
+
+        @Override
+        public void onPreviewFrame(byte[] data, Camera cam) {
+            if (data == null) throw new NullPointerException();
+            Camera.Size size = cam.getParameters().getPreviewSize();
+            if (size == null) throw new NullPointerException();
+
+
+            int width = size.width;
+            int height = size.height;
+
+            long curTime=System.currentTimeMillis();
+            if(isMeasureFinished){Log.i("haha:", isShowResult+";"+arrIndex );
+                if(isShowResult==false) {
+
+                    MeasureHeart(MeasureHeart(0));
+                    isShowResult=true;
+
+                }
+                if(resetisShowResult==1){
+                    resetisShowResult=0;
+                    MeasureHeart(MeasureHeart(0));
+                    isShowResult=true;
+                }
+            }else{
+                arrIndex++;
             }
-            camera.stopPreview();
-            camera.setPreviewCallback(null);
-            camera.release();
-            camera = null;
+            if(curTime-startTime>500&&isMeasureFinished==false){
+                arrTime[arrIndex]=curTime;
+                arrSumRed[arrIndex]=ImageProcessing.decodeYUV420SPtoRedSum(data.clone(),height,width);
+                Log.i("information 2:", arrSumRed[arrIndex] +";"+arrIndex );
+            }
+            if(curTime-startTime>3500&&isMeasureFinished==false){
+
+                isMeasureFinished=true;
+
+            }
+
+
+
         }
+
+    };
+    private static int MeasureHeart(int stIndex){
+        int startIndex = stIndex;
+        ///Toast.makeText(myContext, ""+stIndex, Toast.LENGTH_SHORT).show();
+        for (int i = stIndex; i < arrIndex; i++) {
+            if (arrSumRed[startIndex] < arrSumRed[i ]) {
+                startIndex = i ;
+            }
+        }
+
+
+        //using limit time to calculate startIndex and endIndex
+        int endIndex = startIndex;
+        int indexMin=startIndex;
+        double interval=-1;
+        if(arrTime[startIndex]-arrTime[stIndex]<=500){//max nam ben trai,startIndex=max
+            //Toast.makeText(myContext, "1", Toast.LENGTH_SHORT).show();
+            while (arrTime[endIndex] - arrTime[startIndex] < 500)
+            {
+                endIndex++;
+            }
+            for (int i=startIndex;i<=endIndex;i++){
+                if(arrSumRed[indexMin]>arrSumRed[i]&&(arrTime[i]-arrTime[startIndex]<=300)){indexMin=i;}
+                Log.i("interval 1", arrSumRed[endIndex]+"; "+arrSumRed[startIndex]+"; "+arrSumRed[indexMin]+";"+arrSumRed[i]);
+            }
+            interval=(arrTime[indexMin]-arrTime[startIndex])*2;
+
+
+        }
+        else{//max nam ben phai, endIndex =max
+
+            while (arrTime[endIndex] - arrTime[startIndex] < 500)
+            {
+                startIndex--;
+            }
+            for (int i=startIndex;i<=endIndex;i++){
+                if(arrSumRed[indexMin]>arrSumRed[i]&&(arrTime[endIndex]-arrTime[i]<=300)){indexMin=i;}
+                Log.i("interval 2", arrSumRed[endIndex]+"; "+arrSumRed[startIndex]+"; "+arrSumRed[indexMin]+";"+arrSumRed[i]);
+            }
+            interval=(arrTime[endIndex]-arrTime[indexMin])*2;
+        }
+
+        long result=Math.round(60*1000.0*0.67/(interval));
+        arrResult[indexOfResult]=result;
+
+        if(indexOfResult==1){
+            long showResult=arrResult[0]>arrResult[1]?arrResult[1]:arrResult[0];
+            if(showResult>110){
+                Log.i("ancur:", isShowResult+";"+showResult );
+                arrIndex=-1;
+                startTime=System.currentTimeMillis();
+                indexOfResult=0;
+                isMeasureFinished=false;
+                resetisShowResult=1;
+            }else{
+            isFlashOn=false;
+
+            Intent showResultActivity=new Intent(myContext,ShowResult.class);
+            showResultActivity.putExtra("result",showResult+"");
+            myContext.startActivity(showResultActivity);
+//            text.setText(showResult+"");
+//            arrIndex=0;
+//            isMeasureFinished=false;
+//            isShowResult=false;
+//            camera.stopPreview();
+//            btnSwitch.setText("Bắt đầu đo");
+//            btnSwitch.setEnabled(true);
+        }
+        }else{ indexOfResult++;}
+
+
+        return endIndex;
     }
 
-    private void releaseCamera() {
-        // stop and release camera
-        if (camera != null) {
-            if(isFlashOn){
-                params.setFlashMode(Parameters.FLASH_MODE_OFF);
-                camera.setParameters(params);
-                isFlashOn=false;
+    private static SurfaceHolder.Callback surfaceCallback = new SurfaceHolder.Callback() {
+
+        @Override
+        public void surfaceCreated(SurfaceHolder holder) {
+            try {
+                camera.setPreviewDisplay(previewHolder);
+                camera.setPreviewCallback(previewCallback);
+            } catch (Throwable t) {
+                Log.e("Error", "Exception in setPreviewDisplay()", t);
             }
-            camera.stopPreview();
-            camera.setPreviewCallback(null);
-//            camera.release();
-//            camera = null;
         }
+
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            //ignore
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            // ignore
+        }
+    };
+
+    private static Camera.Size getSmallestPreviewSize(int width, int height, Camera.Parameters parameters) {
+        Camera.Size result = null;
+
+        for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
+            Log.i("vkl",""+size);
+            if (size.width <= width && size.height <= height) {
+                if (result == null) {
+                    result = size;
+                } else {
+                    int resultArea = result.width * result.height;
+                    int newArea = size.width * size.height;
+
+                    if (newArea < resultArea) result = size;
+                }
+            }
+        }
+
+        return result;
     }
+
+
 
 }

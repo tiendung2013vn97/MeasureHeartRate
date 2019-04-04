@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MeasureHeartRate</string>
     <string name="zero">0</string>
+    <string name="title_activity_show_result">ShowResult</string>
 </resources>

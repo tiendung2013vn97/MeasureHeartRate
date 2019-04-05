@@ -269,6 +269,7 @@ public class MainActivity extends AppCompatActivity {
         int startIndex = stIndex;
         ///Toast.makeText(myContext, ""+stIndex, Toast.LENGTH_SHORT).show();
         for (int i = stIndex; i < arrIndex; i++) {
+            if(arrTime[i]-arrTime[stIndex]>=1000){break;}
             if (arrSumRed[startIndex] < arrSumRed[i ]) {
                 startIndex = i ;
             }

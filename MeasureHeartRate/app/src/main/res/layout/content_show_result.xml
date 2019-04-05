@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
-        android:textSize="36sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         android:textAlignment="center"
         android:text="Nhịp tim/phút :" />
@@ -21,17 +21,17 @@
         android:id="@+id/heartBeat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:textAlignment="center"
-        android:textSize="56sp"
+        android:textSize="46sp"
         android:text="0" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:textSize="36sp"
+        android:layout_marginTop="10dp"
+        android:textSize="26sp"
         android:textStyle="bold"
         android:textAlignment="center"
         android:text="Tình trạng sức khỏe tim :"  />
@@ -40,7 +40,7 @@
         android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="131dp"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="16dp"
         android:text=""
         android:gravity="center"
         android:textAlignment="center"

@@ -252,9 +252,9 @@ public class MainActivity extends AppCompatActivity {
             if(curTime-startTime>500&&isMeasureFinished==false){
                 arrTime[arrIndex]=curTime;
                 arrSumRed[arrIndex]=ImageProcessing.decodeYUV420SPtoRedSum(data.clone(),height,width);
-                Log.i("information 2:", arrSumRed[arrIndex] +";"+arrIndex );
+                Log.i("arrSumRed:", arrSumRed[arrIndex]+";"+(curTime%100000)*1.0/1000 );
             }
-            if(curTime-startTime>3500&&isMeasureFinished==false){
+            if(curTime-startTime>5500&&isMeasureFinished==false){
 
                 isMeasureFinished=true;
 
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
         Camera.Size result = null;
 
         for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
-            Log.i("vkl",""+size);
+            //Log.i("vkl",""+size);
             if (size.width <= width && size.height <= height) {
                 if (result == null) {
                     result = size;

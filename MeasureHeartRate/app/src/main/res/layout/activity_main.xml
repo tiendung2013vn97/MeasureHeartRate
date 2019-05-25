@@ -12,7 +12,7 @@
     <TextView
         android:id="@+id/txtHeartRate"
         android:layout_width="match_parent"
-        android:layout_height="57dp"
+        android:layout_height="0dp"
         android:layout_marginTop="50dp"
         android:textSize="32sp"
         android:textAlignment="center"
@@ -22,7 +22,7 @@
         android:id="@+id/imgHeart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="0dp"
         app:srcCompat="@drawable/heart_orange" />
 
     <Button
@@ -38,13 +38,14 @@
         <SurfaceView
             android:id="@+id/preview"
             android:layout_width="fill_parent"
-            android:layout_height="200dp" />
+            android:layout_height="600dp" />
 
-        <ImageView
+<!--        <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@android:color/background_light" />
+        -->
     </FrameLayout>
 
 </LinearLayout>

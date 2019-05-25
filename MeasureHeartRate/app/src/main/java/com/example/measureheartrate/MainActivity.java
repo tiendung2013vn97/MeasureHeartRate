@@ -40,12 +40,12 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
-    public  Button btnSwitch;
+    public Button btnSwitch;
     public static boolean isFlashOn;
     private boolean hasFlash;
     private static final int CAMERA_PERMISSION = 1;
     private static Context myContext;
-    int ColorHeart=0;
+    int ColorHeart;
 
     private ImageView imgHeart;
     private TextView txtHeartRate;
@@ -54,18 +54,25 @@ public class MainActivity extends AppCompatActivity {
     private static SurfaceHolder previewHolder = null;
     private static Camera camera = null;
     private static View image = null;
-    public  TextView text = null;
-    private static long startTime=0;
+    public TextView text = null;
+    private static long startTime;
 
-    private static int[] arrSumRed=new int[1000];
-    private static long[] arrTime=new long[1000];
-    private static int arrIndex=-1;
+    private static long[] arrSumRed ;
+    private static long[] arrTime ;
+    private static int arrIndex;
 
-    private static boolean isMeasureFinished=false;
-    private static boolean isShowResult=false;
-    private static long[] arrResult=new long[10];
-    private static int indexOfResult=0;
-    private static int resetisShowResult=0;
+    private static boolean isMeasureFinished;
+
+    private static float minInterval;
+    private static float maxInterval;
+    private static float intervalDeiationRate;
+
+    private static double arrResult[][] ;
+    private static int arrResultIndex ;
+    private static int peaks[];
+    private static int peakIndex;
+
+    private static boolean loop ;
 
 
     @Override
@@ -73,19 +80,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        Toast.makeText(this,"ONCREATE",Toast.LENGTH_SHORT).show();
         btnSwitch = (Button) findViewById(R.id.btnSwitch);
 
-        imgHeart=(ImageView)findViewById(R.id.imgHeart);
-        txtHeartRate=(TextView)findViewById(R.id.txtHeartRate);
+        imgHeart = (ImageView) findViewById(R.id.imgHeart);
+        txtHeartRate = (TextView) findViewById(R.id.txtHeartRate);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        myContext=this;
-        isFlashOn=false;
+        myContext = this;
+        isFlashOn = false;
         preview = (SurfaceView) findViewById(R.id.preview);
         previewHolder = preview.getHolder();
         previewHolder.addCallback(surfaceCallback);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        myContext=this;
+        myContext = this;
+
+        minInterval = 500f;//max beat per second is 120
+        maxInterval = 1500f;//min beat persecond is 40
+        intervalDeiationRate = 0.01f;
+
+
         //check Camera Permission__________________________________________________________
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED) {
@@ -116,19 +129,28 @@ public class MainActivity extends AppCompatActivity {
         }
         //end check has flash_______________________________________________________________
 
+        peakIndex = 0;
+        arrResultIndex = 0;
+        arrIndex = -1;
+        isMeasureFinished = false;
+        loop = true;
+        ColorHeart = 0;
+        startTime = 0;
+        arrSumRed = new long[3000];
+        arrTime = new long[3000];
+        arrResult = new double[30000][3];
+        peaks = new int[256];
 
         btnSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                arrIndex=-1;
-                indexOfResult=0;
-                isMeasureFinished=false;
-                isShowResult=false;
+            Log.i("loop",loop+"");
+                arrIndex = -1;
+                isMeasureFinished = false;
                 btnSwitch.setEnabled(false);
                 btnSwitch.setText("Đang đo...");
 
-                isFlashOn=true;
+                isFlashOn = true;
                 HeartAnimation();
                 Camera.Parameters parameters = camera.getParameters();
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -139,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 camera.setParameters(parameters);
                 camera.startPreview();
-                startTime=System.currentTimeMillis();
+                startTime = System.currentTimeMillis();
 
             }
         });
@@ -147,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
     }//end OnCreate
 
-    private void HeartAnimation(){
+    private void HeartAnimation() {
         final Handler handler = new Handler();
         Timer timer = new Timer(false);
         TimerTask timerTask = new TimerTask() {
@@ -156,13 +178,13 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if(isFlashOn){
-                            if(ColorHeart==0){
-                                ColorHeart=1;
+                        if (isFlashOn) {
+                            if (ColorHeart == 0) {
+                                ColorHeart = 1;
                                 imgHeart.setImageResource(R.drawable.heart_red);
 
-                            }else{
-                                ColorHeart=0;
+                            } else {
+                                ColorHeart = 0;
                                 imgHeart.setImageResource(R.drawable.heart_orange);
                             }
                             HeartAnimation();
@@ -171,14 +193,14 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         };
-        timer.schedule(timerTask,500);
+        timer.schedule(timerTask, 500);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch(requestCode){
-            case CAMERA_PERMISSION:{
+        switch (requestCode) {
+            case CAMERA_PERMISSION: {
                 if (grantResults.length > 1
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                     AlertDialog alert = new AlertDialog.Builder(MainActivity.this)
@@ -192,13 +214,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     alert.show();
-                }else{
+                } else {
 
                 }
 
                 break;
             }
-            default:break;
+            default:
+                break;
         }
     }
 
@@ -208,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         camera = Camera.open();
         // startTime = System.currentTimeMillis();
     }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -233,111 +257,219 @@ public class MainActivity extends AppCompatActivity {
             int width = size.width;
             int height = size.height;
 
-            long curTime=System.currentTimeMillis();
-            if(isMeasureFinished){Log.i("haha:", isShowResult+";"+arrIndex );
-                if(isShowResult==false) {
+            long curTime = System.currentTimeMillis();
+            if (isMeasureFinished) {
 
-                    MeasureHeart(MeasureHeart(0));
-                    isShowResult=true;
+                if(loop){
+                    MeasureHeartBeat();
+                }
 
-                }
-                if(resetisShowResult==1){
-                    resetisShowResult=0;
-                    MeasureHeart(MeasureHeart(0));
-                    isShowResult=true;
-                }
-            }else{
+            } else {
                 arrIndex++;
             }
-            if(curTime-startTime>500&&isMeasureFinished==false){
-                arrTime[arrIndex]=curTime;
-                arrSumRed[arrIndex]=ImageProcessing.decodeYUV420SPtoRedSum(data.clone(),height,width);
-                Log.i("arrSumRed:", arrSumRed[arrIndex]+";"+(curTime%100000)*1.0/1000 );
+            if (curTime - startTime > 1000 && isMeasureFinished == false) {
+                arrTime[arrIndex] = curTime;
+                arrSumRed[arrIndex] = ImageProcessing.decodeYUV420SPtoRedSum(data.clone(), height, width);
+                Log.i("arrSumRed:", arrSumRed[arrIndex] + ";" + (curTime % 100000) * 1.0 / 1000);
             }
-            if(curTime-startTime>5500&&isMeasureFinished==false){
+            if (curTime - startTime > 15000 && isMeasureFinished == false) {
 
-                isMeasureFinished=true;
+                isMeasureFinished = true;
 
             }
-
 
 
         }
 
     };
-    private static int MeasureHeart(int stIndex){
-        int startIndex = stIndex;
-        ///Toast.makeText(myContext, ""+stIndex, Toast.LENGTH_SHORT).show();
-        for (int i = stIndex; i < arrIndex; i++) {
-            if(arrTime[i]-arrTime[stIndex]>=1000){break;}
-            if (arrSumRed[startIndex] < arrSumRed[i ]) {
-                startIndex = i ;
+
+    private static int pickHighestPeak(int startIndexOfPeaks, int endIndexOfPeaks) {
+        int maxPeak = startIndexOfPeaks;
+
+        for (int i = startIndexOfPeaks; i <= endIndexOfPeaks; i++) {
+
+            if (arrSumRed[peaks[maxPeak]] < arrSumRed[peaks[i]]) {
+                maxPeak = i;
             }
+
         }
 
-
-        //using limit time to calculate startIndex and endIndex
-        int endIndex = startIndex;
-        int indexMin=startIndex;
-        double interval=-1;
-        if(arrTime[startIndex]-arrTime[stIndex]<=500){//max nam ben trai,startIndex=max
-            //Toast.makeText(myContext, "1", Toast.LENGTH_SHORT).show();
-            while (arrTime[endIndex] - arrTime[startIndex] < 500)
-            {
-                endIndex++;
-            }
-            for (int i=startIndex;i<=endIndex;i++){
-                if(arrSumRed[indexMin]>arrSumRed[i]&&(arrTime[i]-arrTime[startIndex]<=300)){indexMin=i;}
-                Log.i("interval 1", arrSumRed[endIndex]+"; "+arrSumRed[startIndex]+"; "+arrSumRed[indexMin]+";"+arrSumRed[i]);
-            }
-            interval=(arrTime[indexMin]-arrTime[startIndex])*2;
-
-
-        }
-        else{//max nam ben phai, endIndex =max
-
-            while (arrTime[endIndex] - arrTime[startIndex] < 500)
-            {
-                startIndex--;
-            }
-            for (int i=startIndex;i<=endIndex;i++){
-                if(arrSumRed[indexMin]>arrSumRed[i]&&(arrTime[endIndex]-arrTime[i]<=300)){indexMin=i;}
-                Log.i("interval 2", arrSumRed[endIndex]+"; "+arrSumRed[startIndex]+"; "+arrSumRed[indexMin]+";"+arrSumRed[i]);
-            }
-            interval=(arrTime[endIndex]-arrTime[indexMin])*2;
-        }
-
-        long result=Math.round(60*1000.0*0.67/(interval));
-        arrResult[indexOfResult]=result;
-
-        if(indexOfResult==1){
-            long showResult=arrResult[0]>arrResult[1]?arrResult[1]:arrResult[0];
-            if(showResult>110){
-                Log.i("ancur:", isShowResult+";"+showResult );
-                arrIndex=-1;
-                startTime=System.currentTimeMillis();
-                indexOfResult=0;
-                isMeasureFinished=false;
-                resetisShowResult=1;
-            }else{
-            isFlashOn=false;
-
-            Intent showResultActivity=new Intent(myContext,ShowResult.class);
-            showResultActivity.putExtra("result",showResult+"");
-            myContext.startActivity(showResultActivity);
-//            text.setText(showResult+"");
-//            arrIndex=0;
-//            isMeasureFinished=false;
-//            isShowResult=false;
-//            camera.stopPreview();
-//            btnSwitch.setText("Bắt đầu đo");
-//            btnSwitch.setEnabled(true);
-        }
-        }else{ indexOfResult++;}
-
-
-        return endIndex;
+        return maxPeak;
     }
+
+    //Count same interval between on peaks
+    private static double[] CountSameIntervalAndAverageInterval(int i, int j) { //i,j is index of peaks
+        double[] result = new double[3];
+        int count = 1;
+
+        float targetInterval = arrTime[peaks[j]] - arrTime[peaks[i]];
+        float sumInterval = targetInterval;
+        long sumRed = arrSumRed[i] + arrSumRed[j];
+        //Loop toward the head of array peaks
+        for (int idBefore = i; idBefore >= 0; ) {
+
+            boolean flag = false;
+
+            int startIndexOfPeaks = idBefore;
+            for (; startIndexOfPeaks >= 0; startIndexOfPeaks--) {
+
+                if ((arrTime[peaks[idBefore]] - arrTime[peaks[startIndexOfPeaks]]) > (targetInterval + targetInterval * intervalDeiationRate)) {
+                    startIndexOfPeaks--;
+                    break;
+                }
+
+            }
+
+            if (startIndexOfPeaks == -1) {// maybe still existing interval >=arrTime[peaks[endIndexOfPeaks]]
+                startIndexOfPeaks = 0;
+            }
+
+
+            int endIndexOfPeaks = idBefore;
+            for (; endIndexOfPeaks >= 0; endIndexOfPeaks--) {
+
+                if ((arrTime[peaks[idBefore]] - arrTime[peaks[endIndexOfPeaks]]) >= (targetInterval - targetInterval * intervalDeiationRate)) {
+                    flag = true;
+                    break;
+                }
+
+            }
+
+            if (flag == true) {//flag =true mean exsiting fit peak
+                count++;
+                int maxPeakLocal = pickHighestPeak(startIndexOfPeaks, endIndexOfPeaks);
+                Log.i("timer:", maxPeakLocal + ";" + idBefore);
+                sumRed += arrSumRed[peaks[maxPeakLocal]];
+                sumInterval += (arrTime[peaks[idBefore]] - arrTime[peaks[maxPeakLocal]]);
+                idBefore = maxPeakLocal;
+            } else {
+                idBefore--;
+            }
+
+        }
+
+        //Loop toward the end of array peaks
+        for (int idAfter = j; idAfter <= peakIndex; ) {
+
+            boolean flag = false;
+
+            int startIndexOfPeaks = idAfter;
+            for (; startIndexOfPeaks <= peakIndex; startIndexOfPeaks++) {
+
+                if ((arrTime[peaks[startIndexOfPeaks]] - arrTime[peaks[idAfter]]) >= (targetInterval - targetInterval * intervalDeiationRate)) {
+                    flag = true;
+                    break;
+                }
+
+            }
+
+            if (startIndexOfPeaks > peakIndex) {//stop loop toward the end of peaks
+                idAfter = peakIndex + 1;
+                break;
+            }
+
+            int endIndexOfPeaks = idAfter;
+            for (; endIndexOfPeaks <= peakIndex; endIndexOfPeaks++) {
+
+                if ((arrTime[peaks[endIndexOfPeaks]] - arrTime[peaks[idAfter]]) > (targetInterval + targetInterval * intervalDeiationRate)) {
+                    break;
+                }
+
+            }
+
+            endIndexOfPeaks--;
+
+            if (flag == true) {//flag =true mean exsiting fit peak
+                count++;
+                int maxPeakLocal = pickHighestPeak(startIndexOfPeaks, endIndexOfPeaks);
+                Log.i("timer2:", maxPeakLocal + ";" + idAfter);
+                sumRed += arrSumRed[peaks[maxPeakLocal]];
+                sumInterval += (arrTime[peaks[maxPeakLocal]] - arrTime[peaks[idAfter]]);
+                idAfter = maxPeakLocal;
+            } else {
+                idAfter++;
+            }
+
+        }
+
+        result[0] = count;
+        result[1] = sumInterval / count;
+        result[2] = sumRed;
+        return result;
+    }
+
+
+    //Measure HeartBeat
+    private static int MeasureHeartBeat() {
+
+        int heartBeat = 0;
+
+        for (int i = 1; i < arrIndex - 1; i++) {
+
+            if ((arrSumRed[i] > arrSumRed[i - 1] && arrSumRed[i] >= arrSumRed[i + 1])
+                    || (arrSumRed[i] >= arrSumRed[i - 1] && arrSumRed[i] > arrSumRed[i + 1])) {
+                peaks[peakIndex] = i;
+                Log.i("peaks: ", peakIndex + ";" + i);
+                peakIndex++;
+            }
+
+        }
+        peakIndex--;
+
+        for (int i = 0; i < peakIndex; i++) {
+            for (int j = i + 1; j <= peakIndex; j++) {
+
+                float interval = arrTime[peaks[j]] - arrTime[peaks[i]];
+
+                if (interval >= minInterval && interval <= maxInterval) {
+
+                    Log.i("oday", "" + i + ";" + j + ";" + interval);
+                    double[] resultCount;
+                    resultCount = CountSameIntervalAndAverageInterval(i, j);
+                    arrResult[arrResultIndex][0] = resultCount[0];//count interval repeat
+                    arrResult[arrResultIndex][1] = resultCount[1];//interval
+                    arrResult[arrResultIndex][2] = resultCount[2];//sum red
+
+                    Log.i("beatAverage: ",arrResultIndex+";"+ resultCount[0] + "; " + resultCount[1] + ";" + resultCount[2]);
+
+                    arrResultIndex++;
+                }
+
+            }
+        }
+        arrResultIndex--;
+        double maxCount = 0;
+
+        for (int i = 0; i <= arrResultIndex; i++) {
+
+            if (arrResult[i][0] > maxCount) {
+                maxCount = arrResult[i][0];
+            }
+
+        }
+        Log.i("maxCount",maxCount+"");
+        double maxRedSum=0;
+        int indexMaxRedSum=-1;
+        for (int i = 0; i <= arrResultIndex; i++) {
+
+            if (arrResult[i][0] == maxCount&&arrResult[i][2]>maxRedSum) {
+                maxRedSum=arrResult[i][2];
+                indexMaxRedSum=i;
+            }
+
+        }
+
+        heartBeat=(int)( 60000f/(arrResult[indexMaxRedSum][1]) );
+    Log.i("rsult",arrResult[indexMaxRedSum][1]+";"+heartBeat);
+        Intent showResultActivity=new Intent(myContext,ShowResult.class);
+            showResultActivity.putExtra("result",heartBeat+"");
+            myContext.startActivity(showResultActivity);
+
+        loop=false;
+        return heartBeat;
+
+    }
+
 
     private static SurfaceHolder.Callback surfaceCallback = new SurfaceHolder.Callback() {
 
@@ -381,7 +513,6 @@ public class MainActivity extends AppCompatActivity {
 
         return result;
     }
-
 
 
 }

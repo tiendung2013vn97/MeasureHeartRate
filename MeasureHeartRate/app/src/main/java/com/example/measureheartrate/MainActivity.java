@@ -328,9 +328,7 @@ public class MainActivity extends AppCompatActivity {
             }
             case WRITE_EXTERNAL_STORAGE_PERMISSION: {
                 if ( grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    FileUtility.createFolderIfNotExist("YourHeartRate");
-                    FileUtility.writeFile("YourHeartRate","MeasureHistory","ab\ncd\nef");
-                    FileUtility.readMeasureHistory("YourHeartRate","MeasureHistory");
+
                 } else {
                     AlertDialog alert = new AlertDialog.Builder(MainActivity.this)
                             .create();
@@ -455,19 +453,19 @@ public class MainActivity extends AppCompatActivity {
                         String judgeT="";
                         if(heartBeat<50){
                             judge=1;
-                            judgeT="Nếu bạn là vận động viên, thì tim bạn rất khỏe!\nNếu bạn không phải là vận động viên ,\n hãy đến phòng khám để kiểm tra lại sức khỏe tim!";
+                            judgeT="Nhịp tim/phút: "+heartBeat+"\nNếu bạn là vận động viên, thì tim bạn rất khỏe!\nNếu bạn không phải là vận động viên ,\n hãy đến phòng khám để kiểm tra lại sức khỏe tim!";
                         }
                         if(heartBeat>=50 &&heartBeat<=110){
                             judge=2;
-                            judgeT="Sức khỏe tim bạn rất tốt!";
+                            judgeT="Nhịp tim/phút: "+heartBeat+"\nSức khỏe tim bạn rất tốt!";
                         }
                         if(heartBeat>110 &&heartBeat<=120){
                             judge=3;
-                            judgeT="Nhịp tim/phút bạn khá cao,\nbạn nên đến phòng khám để kiểm tra lại!";
+                            judgeT="Nhịp tim/phút: "+heartBeat+"\nNhịp tim/phút bạn khá cao,\nbạn nên đến phòng khám để kiểm tra lại!";
                         }
                         if(heartBeat>120){
                             judge=4;
-                            judgeT="Nhịp tim/phút bạn quá cao,\nbạn cần đến phòng khám kiểm tra sức khỏe tim gấp!";
+                            judgeT="Nhịp tim/phút: "+heartBeat+"\nNhịp tim/phút bạn quá cao,\nbạn cần đến phòng khám kiểm tra sức khỏe tim gấp!";
                         }
                         final MeasureResult temp=new MeasureResult(strDate,heartBeat+"",judge+"");
 

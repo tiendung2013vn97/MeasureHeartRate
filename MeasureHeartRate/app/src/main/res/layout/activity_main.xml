@@ -3,49 +3,137 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical"
+    android:weightSum="100"
     tools:context=".MainActivity"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
 
-
-    <TextView
-        android:id="@+id/txtHeartRate"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="50dp"
-        android:textSize="32sp"
-        android:textAlignment="center"
-        android:text="@string/zero" />
-
-    <ImageView
-        android:id="@+id/imgHeart"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        app:srcCompat="@drawable/heart_orange" />
+        android:layout_weight="70"
+        android:orientation="vertical"
+        android:weightSum="100"
+        android:gravity="center_vertical">
 
-    <Button
-        android:id="@+id/btnSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:layout_marginTop="100dp"
-        android:text="Bắt đầu đo" />
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="25"
+            android:orientation="vertical">
 
-        <SurfaceView
-            android:id="@+id/preview"
-            android:layout_width="fill_parent"
-            android:layout_height="600dp" />
+            <TextView
+                android:id="@+id/txtHeartRate"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/zero"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:textSize="30sp" />
+        </LinearLayout>
 
-<!--        <ImageView
-        android:id="@+id/imageView"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="25"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imgHeart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/heart_orange" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="28"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnStartMeasure"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/batDauDo" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="28"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnStopMeasure"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/dungDo" />
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@android:color/background_light" />
-        -->
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:layout_weight="30"
+        android:weightSum="2"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+                <Button
+                    android:id="@+id/btnMesureGuide"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/huongDanDo" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+                <Button
+                    android:id="@+id/btnMesureHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="@string/lichSuDo" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <SurfaceView
+                android:id="@+id/preview"
+                android:layout_width="fill_parent"
+                android:layout_height="200dp" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@android:color/background_light" />
+
+        </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>

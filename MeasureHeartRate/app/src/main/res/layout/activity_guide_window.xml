@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GuideWindow">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:textSize="15sp"
+            android:text="Bước 1: Chạm tay vào camera, tay phải đè qua đèn flash" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="20"
+            app:srcCompat="@mipmap/demo_1" />
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="20"
+            app:srcCompat="@mipmap/demo_2" />
+        <TextView
+        android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:textSize="15sp"
+        android:text="Bước 2: Nhấn nút 'Bắt đầu đo', có thể nhấn nút 'Dừng đo' nếu muốn dừng lại!" />
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:textSize="15sp"
+            android:text="Bước 3: Chọn 'Lưu' hoặc 'Không lưu' kết quả vừa đo được" />
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:textSize="15sp"
+            android:text="Bước 4:Chọn nút 'Lịch sử đo nhịp tim' để xem lại các kết quả cũ" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

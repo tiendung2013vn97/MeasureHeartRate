@@ -34,12 +34,6 @@ public abstract class ImageProcessing {
 
                 int pixel = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
                 int red = (pixel >> 16) & 0xff;
-                int green=(pixel >> 8) & 0x00ff;
-                int blue=(pixel ) & 0x0000ff;
-                if(j==height/2&&i==width/2){
-                    int temp=((r << 6) & 0xff0000);
-                    Log.i("msg","red: "+red+"; g:"+green+" ;b: "+blue);
-                }
 
                 sum += red;
 

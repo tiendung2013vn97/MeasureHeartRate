@@ -1,5 +1,18 @@
 <resources>
-    <string name="app_name">MeasureHeartRate</string>
+    <string name="app_name">Your Heart Rate</string>
     <string name="zero">0</string>
     <string name="title_activity_show_result">ShowResult</string>
+    <string name="batDauDo">Bắt đầu đo</string>
+    <string name="dungDo">Dừng đo</string>
+    <string name="huongDanDo">Hướng dẫn đo nhịp tim</string>
+    <string name="lichSuDo">Lịch sử đo nhịp tim</string>
+    <string name="theoDoiTapLuyen">Theo dõi tập luyện</string>
+    <string name="thoiGian">Thời gian :</string>
+    <string name="heartBeat">Nhịp tim/phút :</string>
+    <string name="judgment">Đánh giá :</string>
+    <string name="judgment50">Nếu bạn là vận động viên, thì tim bạn rất khỏe!\nNếu bạn không phải là vận động viên ,\n hãy đến phòng khám để kiểm tra lại sức khỏe tim!</string>
+    <string name="judgment50_110">Sức khỏe tim bạn rất tốt!</string>
+    <string name="judgment110_120">Nhịp tim/phút bạn khá cao,\nbạn nên đến phòng khám để kiểm tra lại!</string>
+    <string name="judgment120">Nhịp tim/phút bạn quá cao,\nbạn cần đến phòng khám kiểm tra sức khỏe tim gấp!</string>
+
 </resources>
